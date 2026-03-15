@@ -1,4 +1,4 @@
-[🇷🇺 Русский](README_RU.md) | [🇬🇧 English](README_EN.md)
+[🇷🇺 Русский](README.md) | [🇬🇧 English](README_EN.md)
 # 🔗 URL Shortener Service
 
 An API service for shortening long URLs with analytics and management.
