@@ -90,6 +90,15 @@ async def reset_redis():
     yield
 
 
+@pytest.fixture(autouse=True)
+def patch_redis_globally():
+    import app.core.cache as cache_module
+    original = cache_module._redis_client
+    cache_module._redis_client = _fake_redis
+    yield
+    cache_module._redis_client = original
+
+
 @pytest_asyncio.fixture
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
     async with TestSessionLocal() as session:
