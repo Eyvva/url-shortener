@@ -212,6 +212,75 @@ curl http://localhost:8000/api/v1/links/mylink/stats
 
 ---
 
+## Тестирование
+
+Тесты запускаются **без Docker** — используется SQLite in-memory вместо PostgreSQL и FakeRedis вместо настоящего Redis.
+
+### Установка зависимостей
+
+```bash
+pip install -r requirements.txt
+```
+
+### Запуск тестов с отчётом покрытия
+
+```bash
+# Запуск всех тестов + покрытие в терминале и HTML
+coverage run -m pytest tests
+
+# Или через pytest (настроено в pytest.ini, включает --cov автоматически)
+pytest tests
+```
+
+### Просмотр HTML-отчёта покрытия
+
+После запуска тестов откройте файл в браузере:
+
+```
+htmlcov/index.html
+```
+
+Файл `htmlcov/index.html` визуализирует покрытие построчно для каждого модуля.
+
+### Структура тестов
+
+```
+tests/
+├── conftest.py            # Фикстуры: SQLite БД, FakeRedis, HTTP-клиент
+├── test_auth.py           # Регистрация, логин, /me
+├── test_links.py          # CRUD ссылок, редирект, поиск, очистка
+├── test_redirect.py       # Кэширование редиректов и статистики
+├── test_projects.py       # CRUD проектов
+├── test_link_service.py   # Юнит-тесты сервиса (генерация кода, бизнес-логика)
+├── test_schemas.py        # Валидация Pydantic схем
+├── test_security.py       # JWT, хэширование паролей
+├── test_cache.py          # Redis-утилиты (ключи, операции)
+├── test_scheduler.py      # Фоновые задачи
+├── test_edge_cases.py     # Граничные случаи и невалидные данные
+└── test_main.py           # Root-эндпоинт и lifespan приложения
+```
+
+### Типы тестов
+
+| Тип | Файлы | Что проверяет |
+|-----|-------|---------------|
+| Юнит | `test_schemas.py`, `test_security.py`, `test_cache.py`, `test_link_service.py` | Изолированная логика: валидация, JWT, генерация кодов |
+| Функциональные | `test_auth.py`, `test_links.py`, `test_projects.py`, `test_redirect.py`, `test_edge_cases.py` | API через TestClient (все CRUD + редирект) |
+| Нагрузочные | `locustfile.py` | Производительность под нагрузкой |
+
+### Нагрузочное тестирование (Locust)
+
+```bash
+# С UI — открыть http://localhost:8089
+locust -f locustfile.py --host=http://localhost:8000
+
+# Без UI (50 пользователей, 10/с нарастание, 60 секунд)
+locust -f locustfile.py --host=http://localhost:8000 \
+       --headless -u 50 -r 10 --run-time 60s
+```
+
+---
+
 ## Управление контейнерами
 
 ```bash

@@ -212,6 +212,75 @@ Environment variables in `docker-compose.yml`:
 
 ---
 
+## Testing
+
+Tests run **without Docker** — SQLite in-memory is used instead of PostgreSQL, and FakeRedis replaces real Redis.
+
+### Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### Run tests with coverage report
+
+```bash
+# Run all tests + coverage in terminal and HTML
+coverage run -m pytest tests
+
+# Or via pytest (configured in pytest.ini with --cov automatically)
+pytest tests
+```
+
+### View HTML coverage report
+
+After running the tests, open in a browser:
+
+```
+htmlcov/index.html
+```
+
+The `htmlcov/index.html` file visualizes line-by-line coverage for each module.
+
+### Test structure
+
+```
+tests/
+├── conftest.py            # Fixtures: SQLite DB, FakeRedis, HTTP client
+├── test_auth.py           # Register, login, /me
+├── test_links.py          # CRUD links, redirect, search, cleanup
+├── test_redirect.py       # Redirect and stats caching
+├── test_projects.py       # CRUD projects
+├── test_link_service.py   # Unit tests for the service layer
+├── test_schemas.py        # Pydantic schema validation
+├── test_security.py       # JWT, password hashing
+├── test_cache.py          # Redis utilities (keys, operations)
+├── test_scheduler.py      # Background tasks
+├── test_edge_cases.py     # Edge cases and invalid inputs
+└── test_main.py           # Root endpoint and app lifespan
+```
+
+### Test types
+
+| Type | Files | What is tested |
+|------|-------|----------------|
+| Unit | `test_schemas.py`, `test_security.py`, `test_cache.py`, `test_link_service.py` | Isolated logic: validation, JWT, code generation |
+| Functional | `test_auth.py`, `test_links.py`, `test_projects.py`, `test_redirect.py`, `test_edge_cases.py` | API via TestClient (all CRUD + redirect) |
+| Load | `locustfile.py` | Performance under load |
+
+### Load testing (Locust)
+
+```bash
+# With UI — open http://localhost:8089
+locust -f locustfile.py --host=http://localhost:8000
+
+# Headless (50 users, 10/s ramp, 60 seconds)
+locust -f locustfile.py --host=http://localhost:8000 \
+       --headless -u 50 -r 10 --run-time 60s
+```
+
+---
+
 ## Container Management
 
 ```bash
