@@ -1,0 +1,23 @@
+[run]
+source = app
+omit =
+    app/__init__.py
+    app/models/__init__.py
+    app/schemas/__init__.py
+    app/services/__init__.py
+    app/utils/__init__.py
+    app/core/__init__.py
+    app/api/__init__.py
+    app/api/v1/__init__.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if TYPE_CHECKING:
+    raise NotImplementedError
+    pass
+
+[html]
+directory = htmlcov
+title = URL Shortener — Coverage Report
